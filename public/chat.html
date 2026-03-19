@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SmarttechConnect</title>
+    <style>
+        #video-grid { display: flex; gap: 20px; }
+        video { width: 320px; height: 240px; background: #000; border: 5px solid red; }
+    </style>
+</head>
+<body>
+    <h1>Appel Vidéo P2P</h1>
+    <div id="video-grid">
+        <video id="localVideo" autoplay playsinline muted></video>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        const socket = io();
+        const localVideo = document.getElementById('localVideo');
+        const peer = new Peer(undefined, { path: '/peerjs', host: '/', port: '3000' });
+        let myStream;
+
+        // Accès caméra
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                myStream = stream;
+                localVideo.srcObject = stream;
+            })
+            .catch(err => console.error("Accès caméra refusé :", err));
+
+        // Connexion P2P
+        peer.on('open', id => socket.emit('join-room', 'SALON_TEST', id));
+
+        socket.on('user-connected', peerId => {
+            const call = peer.call(peerId, myStream);
+            call.on('stream', remoteStream => {
+                const video = document.createElement('video');
+                video.srcObject = remoteStream;
+                document.getElementById('video-grid').append(video);
+            });
+        });
+
+        peer.on('call', call => {
+            call.answer(myStream);
+            call.on('stream', remoteStream => {
+                const video = document.createElement('video');
+                video.srcObject = remoteStream;
+                document.getElementById('video-grid').append(video);
+            });
+        });
+    </script>
+</body>
+</html>

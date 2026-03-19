@@ -1,0 +1,22 @@
+body{
+
+font-family:Arial;
+margin:30px;
+
+}
+
+#messages{
+
+border:1px solid #ccc;
+height:200px;
+overflow:auto;
+padding:10px;
+margin-bottom:10px;
+
+}
+
+canvas{
+
+border:2px solid black;
+
+}
